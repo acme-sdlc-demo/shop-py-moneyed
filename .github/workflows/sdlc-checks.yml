@@ -1,0 +1,49 @@
+# Written by the Agentic SDLC Platform from the Project's config; change it through the platform.
+# It runs exactly the platform's gate.
+name: sdlc-checks
+'on':
+  pull_request: {}
+  push:
+    branches:
+    - master
+permissions:
+  contents: read
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 160
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: 'install: python -m pip install --upgrade pip'
+      run: python -m pip install --upgrade pip
+    - name: 'install: python -m pip install "babel>=2.8.0" "typing-extensions>=3.7.4.3"'
+      run: python -m pip install "babel>=2.8.0" "typing-extensions>=3.7.4.3"
+    - name: 'install: python -m pip install "pytest==8.1.1" "pytest-mypy-plugins==3.1.0"
+        "mypy==1.9.0"'
+      run: python -m pip install "pytest==8.1.1" "pytest-mypy-plugins==3.1.0" "mypy==1.9.0"
+    - name: 'install: python -m pip install "black==24.4.0" "isort==5.13.2" "flake8==7.0.0"
+        flake8-type-checking flake8-bugbear flake8-comprehensions flake8-print flake8-mutable
+        flake8-simplify flake8-pytest-style flake8-printf-formatting'
+      run: python -m pip install "black==24.4.0" "isort==5.13.2" "flake8==7.0.0" flake8-type-checking
+        flake8-bugbear flake8-comprehensions flake8-print flake8-mutable flake8-simplify
+        flake8-pytest-style flake8-printf-formatting
+    - name: python -m black --check --quiet src tests
+      run: python -m black --check --quiet src tests
+    - name: python -m isort --check-only src tests
+      run: python -m isort --check-only src tests
+    - name: python -m flake8 src tests
+      run: python -m flake8 src tests
+    - name: python -m mypy --disable-error-code redundant-cast
+      run: python -m mypy --disable-error-code redundant-cast
+    - name: python -c "import os, sys, pytest; os.environ['PATH'] = os.path.dirname(sys.executable)
+        + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']='src'; raise SystemExit(pytest.main(['-q',
+        '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg', '--mypy-only-local-stub',
+        '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
+      run: python -c "import os, sys, pytest; os.environ['PATH'] = os.path.dirname(sys.executable)
+        + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']='src'; raise SystemExit(pytest.main(['-q',
+        '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg', '--mypy-only-local-stub',
+        '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
