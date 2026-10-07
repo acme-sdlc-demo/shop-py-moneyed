@@ -12,7 +12,8 @@ See `docs/agents/CODEBASE_MAP.md` for the full codebase map before designing any
   `typing-extensions>=3.7.4.3`. Do not add a dependency without team approval; this library is
   imported by every SHOP service. [cite: setup.cfg]
 - **Dev/test extras**: `pytest`, `pytest-mypy-plugins`, `mypy>=1.9.0`, `black`, `isort`, `flake8`.
-  All are already in the venv; do not pin new versions. [cite: setup.cfg]
+  All are already in the venv. Versions for `black`, `isort` and `flake8` are pinned in
+  `.pre-commit-config.yaml`; use the gate's pinned versions. [cite: .pre-commit-config.yaml]
 - **No network access** at import time or in tests. Exchange rates are never this library's
   responsibility. [cite: source:product-note@r1]
 

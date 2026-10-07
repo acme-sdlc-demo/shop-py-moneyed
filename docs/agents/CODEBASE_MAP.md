@@ -73,9 +73,9 @@ All commands use the project venv at `project-venv/Scripts/python.exe`.
 | Type check | `python -m mypy --disable-error-code redundant-cast` |
 | Tests (gate) | `python -c "import os, sys, pytest; os.environ['PATH'] = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']='src'; raise SystemExit(pytest.main(['-q', '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg', '--mypy-only-local-stub', '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"` |
 
-**`test_all_babel_currencies` is permanently deselected** at the gate — XCG and ZWG are absent
-from `CURRENCIES`; this is a tracked defect. Re-enable only after adding those currencies.
-[cite: source:transcript-run-a080ea35@r1]
+**`test_all_babel_currencies` is deselected at the gate until XCG and ZWG are added** — those
+currencies are absent from `CURRENCIES`; this is a tracked defect. Re-enable the test once both
+currencies are present. [cite: source:transcript-run-a080ea35@r1]
 
 pytest runs `--doctest-modules` and `--doctest-glob='*.rst'`; keep all docstring examples
 correct. [cite: setup.cfg]
@@ -101,12 +101,13 @@ version string in the release commit. [cite: source:how-we-release@r1]
 
 ### Provides
 
-- `money.type` (component): `Money` and `Currency` types, the `CURRENCIES` registry, `add_currency`, `get_currency`; paths: `src/moneyed/classes.py`, `src/moneyed/__init__.py` [cite: src/moneyed/classes.py]
+- `money.type` (component): `Money` and `Currency` types; paths: `src/moneyed/classes.py`, `src/moneyed/__init__.py` [cite: src/moneyed/classes.py]
+- `money.currency-registry` (component): `CURRENCIES` dict, `add_currency`, `get_currency`, `list_all_currencies`, `get_currencies_of_country`; paths: `src/moneyed/classes.py`, `src/moneyed/__init__.py` [cite: src/moneyed/classes.py]
 - `money.formatting` (component): `format_money` for locale-aware display amounts; paths: `src/moneyed/l10n.py` [cite: src/moneyed/l10n.py]
-- `money.type` (business term): **Money** — an amount together with its ISO 4217 currency, the canonical definition every SHOP service must use; paths: `src/moneyed/classes.py` [cite: source:product-note@r1]
-- `money.type` (business term): **Currency** and **Minor unit** — `Currency.sub_unit` is the authoritative minor-unit value, never assumed to be 2; paths: `src/moneyed/classes.py` [cite: source:product-note@r1]
+- `money.term.money` (business term): **Money** — an amount together with its ISO 4217 currency, the canonical definition every SHOP service must use; paths: `src/moneyed/classes.py` [cite: source:product-note@r1]
+- `money.term.currency` (business term): **Currency** — an ISO 4217 code; SHOP never invents codes; paths: `src/moneyed/classes.py` [cite: source:product-note@r1]
+- `money.term.minor-unit` (business term): **Minor unit** — `Currency.sub_unit` is the authoritative minor-unit value, never assumed to be 2; paths: `src/moneyed/classes.py` [cite: src/moneyed/classes.py]
 
 ### Uses
 
-- ? from shop-django-money: this library is depended on *by* shop-django-money (shop-django-money imports `moneyed.Money` and the currency registry); no import goes the other way [cite: source:transcript-run-a080ea35@r1]
-- None found for outbound calls to other Projects. The library makes no network calls and shares no database or queue. [cite: source:transcript-run-a080ea35@r1]
+- None found. This library makes no outbound calls and imports nothing from other SHOP projects. [cite: source:transcript-run-a080ea35@r1]

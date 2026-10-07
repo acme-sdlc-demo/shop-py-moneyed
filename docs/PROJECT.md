@@ -116,14 +116,14 @@ has more precision than the minor unit allows. [cite: source:transcript-run-a080
 [cite: src/moneyed/classes.py]
 
 **11. Allocation is not yet in the library.**
-Checkout does it by hand today. The agreed shape is `Money.allocate(ratios)` returning a list
+Checkout does it by hand today. The preferred shape is `Money.allocate(ratios)` returning a list
 that sums exactly to the original, with leftover minor units going to the first parts one each in
-order. No target release. [cite: source:product-note@r1] [cite: source:transcript-run-a080ea35@r1]
+order; the final API is not yet agreed. [cite: source:product-note@r1]
+[cite: source:transcript-run-a080ea35@r1]
 
-**12. Planned roadmap order.**
-`CurrencyMismatchError` → `Money.round()` half-even fix → percentage-discount method
-(`Money.discounted(percent)`) → allocation (`Money.allocate(ratios)`) → stale `setup.cfg`
-metadata raise. [cite: source:transcript-run-a080ea35@r1]
+**12. Planned work order (first three items only; sequence beyond that is not decided).**
+`CurrencyMismatchError` (clearer error message) → percentage-discount method
+(`Money.discounted(percent)`) → allocation. [cite: source:transcript-run-a080ea35@r1]
 
 ## Glossary
 
