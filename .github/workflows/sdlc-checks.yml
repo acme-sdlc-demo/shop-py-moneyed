@@ -40,10 +40,10 @@ jobs:
     - name: python -m mypy --disable-error-code redundant-cast
       run: python -m mypy --disable-error-code redundant-cast
     - name: python -c "import os, sys, pytest; os.environ['PATH'] = os.path.dirname(sys.executable)
-        + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']='src'; raise SystemExit(pytest.main(['-q',
-        '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg', '--mypy-only-local-stub',
-        '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
+        + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']=os.path.abspath('src');
+        raise SystemExit(pytest.main(['-q', '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg',
+        '--mypy-only-local-stub', '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
       run: python -c "import os, sys, pytest; os.environ['PATH'] = os.path.dirname(sys.executable)
-        + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']='src'; raise SystemExit(pytest.main(['-q',
-        '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg', '--mypy-only-local-stub',
-        '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
+        + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']=os.path.abspath('src');
+        raise SystemExit(pytest.main(['-q', '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg',
+        '--mypy-only-local-stub', '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
