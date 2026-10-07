@@ -72,9 +72,11 @@ SHOP services install from `v<version>` git tags. Release requires QA sign-off (
 followed by product-owner sign-off (erin or frank); nobody signs off a release they prepared.
 Two blocking conditions: (a) no release in the last week of a month (finance's month-end close)
 unless it fixes a wrong settlement amount; (b) no release while a known defect that changes a
-settlement amount is unfixed. [cite: source:how-we-release@r1] Condition (b) applies today:
-`get_amount_in_sub_unit()` truncates instead of raising when the amount has more precision than
-the minor unit allows — a latent settlement-amount defect (see Decision 10).
+settlement amount is unfixed. [cite: source:how-we-release@r1] Condition (b) does not block
+releases today: `get_amount_in_sub_unit()` truncates instead of raising on amounts with excess
+precision (see Decision 10), but SHOP's rules already require every settlement amount to be
+rounded before that method is called — so no compliant caller is affected. Condition (b) would
+apply if a caller were found that passes an unrounded amount to `get_amount_in_sub_unit()`.
 [cite: source:transcript-run-a080ea35@r1]
 
 **3. Any rounding or arithmetic result change triggers a minor version bump.**
@@ -112,14 +114,16 @@ effect of any other change. [cite: source:transcript-run-a080ea35@r1] [cite: set
 **9. `Money.round()` currently inherits the ambient decimal context (a known gap).**
 Python's default context happens to be `ROUND_HALF_EVEN`, which is correct. Passing
 `rounding=ROUND_HALF_EVEN` explicitly to `Decimal.quantize` is a planned fix, not yet done.
-Until then, callers must ensure the context is set before calling `round()`.
+Until it is fixed, callers must ensure the context is set before calling `round()`.
 [cite: source:transcript-run-a080ea35@r1] [cite: src/moneyed/classes.py]
 
 **10. `Money.get_amount_in_sub_unit()` truncates (a known gap).**
-`int(sub_unit * amount)` truncates toward zero. Upstream intends callers to round first; SHOP
-treats calling this on an unrounded amount as a latent defect. Planned fix: raise if the amount
-has more precision than the minor unit allows. [cite: source:transcript-run-a080ea35@r1]
-[cite: src/moneyed/classes.py]
+`int(self.currency.sub_unit * self.amount)` truncates toward zero. Upstream intends callers to
+round first; SHOP treats calling this on an unrounded amount as a latent defect. The truncation
+does not affect compliant callers today — SHOP's rules require every settlement amount to be
+rounded to the minor unit before this method is called. Planned fix: raise if the amount has more
+precision than the minor unit allows.
+[cite: source:transcript-run-a080ea35@r1] [cite: src/moneyed/classes.py]
 
 **11. Allocation is not yet in the library.**
 Checkout does it by hand today. The preferred shape is `Money.allocate(ratios)` returning a list

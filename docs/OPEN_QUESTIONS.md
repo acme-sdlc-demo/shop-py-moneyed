@@ -17,7 +17,10 @@ Until it is fixed, callers must set `ROUND_HALF_EVEN` in the decimal context bef
 `int(self.currency.sub_unit * self.amount)` truncates toward zero. For a payment provider that
 expects an exact minor-unit integer, calling this on an unrounded `Money` silently loses
 precision. Alice described it as a latent defect for SHOP (upstream treats it as callers'
-responsibility to round first). No fix is scheduled.
+responsibility to round first). This does not block releases today: SHOP's rules already require
+every settlement amount to be rounded to the minor unit before this method is called, so no
+compliant caller encounters the truncation. It bears on the release-blocking condition only if a
+caller is found that passes an unrounded amount. No fix is scheduled.
 [cite: source:transcript-run-a080ea35@r1] [cite: src/moneyed/classes.py]
 
 **3. When will XCG and ZWG be added to `CURRENCIES`?**
