@@ -123,17 +123,11 @@ that sums exactly to the original, with leftover minor units going to the first 
 order; the final API is not yet agreed and there is no target release.
 [cite: source:product-note@r1] [cite: source:transcript-run-a080ea35@r1]
 
-**12. Agreed roadmap order (as of the 2026 onboarding interview with alice).**
-
-1. `CurrencyMismatchError` — clearer cross-currency arithmetic error naming both codes.
-2. `Money.round()` half-even fix — pass `ROUND_HALF_EVEN` explicitly, not from ambient context.
-3. `Money.discounted(percent: Decimal)` — percentage discount returning unrounded `Money`;
-   caller rounds explicitly to a settlement amount.
-4. `Money.allocate(ratios)` — exact split by ratios, leftovers to first parts one minor unit each.
-5. Stale `setup.cfg` metadata raise (Python floor, classifiers, mypy version) — dedicated commit.
-
-Adding XCG and ZWG to `CURRENCIES` is tracked separately as a defect; it does not have a fixed
-position in the sequence above. [cite: source:transcript-run-a080ea35@r1]
+**12. Percentage discount and `CurrencyMismatchError` come before allocation; no broader sequence is agreed.**
+Alice stated that allocation comes after the percentage discount method and the clearer
+currency-mismatch error. [cite: source:transcript-run-a080ea35@r1] No order was stated for
+the `Money.round()` half-even fix or the `setup.cfg` metadata raise; those are planned changes
+without a position in a sequence.
 
 ## Glossary
 

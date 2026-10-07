@@ -9,7 +9,7 @@
 `round()` calls `Decimal.quantize()` without passing `rounding=ROUND_HALF_EVEN`; it inherits
 whatever the ambient decimal context says. Python's default happens to be `ROUND_HALF_EVEN`, but
 a caller that changes the context will silently produce wrong settlement amounts. Alice confirmed
-this is a known gap and a planned change (second item on the roadmap), with no release date set.
+this is a known gap and a planned change, with no release date set.
 Until it is fixed, callers must set `ROUND_HALF_EVEN` in the decimal context before calling
 `round()`. [cite: source:transcript-run-a080ea35@r1] [cite: src/moneyed/classes.py]
 
@@ -22,8 +22,9 @@ responsibility to round first). No fix is scheduled.
 
 **3. When will XCG and ZWG be added to `CURRENCIES`?**
 Babel gained these two currency codes but the library has not. `test_all_babel_currencies` is
-permanently gate-deselected as a tracked defect; it does not block releases because no settlement
-amount is affected. Adding them requires a reviewed change to `classes.py`. No timeline given.
+gate-deselected and tracked as a defect until XCG and ZWG are added; it does not block releases
+because no settlement amount is affected. Adding them requires a reviewed change to `classes.py`.
+No timeline given.
 [cite: source:transcript-run-a080ea35@r1] [cite: docs/agents/CODEBASE_MAP.md]
 
 **4. What is the final API shape for `Money.discounted(percent)`?**
@@ -45,10 +46,9 @@ CI/production run 3.13. The raise is planned as a dedicated commit. Who owns it 
 release? [cite: source:transcript-run-a080ea35@r1] [cite: setup.cfg]
 
 **7. When will `CurrencyMismatchError` be released?**
-Introducing `CurrencyMismatchError(TypeError)` naming both currencies is the first item on the
-agreed roadmap [cite: source:transcript-run-a080ea35@r1] and was described as one of the first
-planned changes in the product note [cite: source:product-note@r1], but no tagged release exists
-yet and no date is set.
+Introducing `CurrencyMismatchError(TypeError)` naming both currencies is one of the first planned
+changes [cite: source:product-note@r1] [cite: source:transcript-run-a080ea35@r1], but no tagged
+release exists yet and no date is set.
 
 **8. Is there a code-level guard preventing services from calling `add_currency` at runtime?**
 The rule that services never call `add_currency` is a policy only; nothing in the code enforces
