@@ -74,6 +74,11 @@ Two blocking conditions: (a) no release in the last week of a month (finance's m
 unless it fixes a wrong settlement amount; (b) no release while a known defect that changes a
 settlement amount is unfixed. [cite: source:how-we-release@r1]
 
+Condition (b) does not block releases today, because `get_amount_in_sub_unit()` truncates but
+SHOP's rules require every settlement amount to be rounded before it is called, so no compliant
+caller is affected; it would apply if a caller passed an unrounded amount.
+[cite: source:transcript-run-a080ea35@r1]
+
 **3. Any rounding or arithmetic result change triggers a minor version bump.**
 Downstream services are settlement-critical; even a silent change to what `round()` returns
 requires a bump called out at the top of `CHANGES.rst`. Both `setup.cfg` and `docs/conf.py` must
@@ -126,10 +131,10 @@ that sums exactly to the original, with leftover minor units going to the first 
 order; the final API is not yet agreed and there is no target release.
 [cite: source:product-note@r1] [cite: source:transcript-run-a080ea35@r1]
 
-**12. Agreed roadmap order: `CurrencyMismatchError` → `Money.round()` half-even fix →
-percentage discount → allocation → stale `setup.cfg` metadata raise.**
+**12. Percentage discount and CurrencyMismatchError come before allocation; no broader sequence is agreed.**
 Alice stated that allocation comes after the percentage-discount method and the clearer
-currency-mismatch error. The percentage-discount API shape (leaning: `Money.discounted(percent:
+currency-mismatch error. No order was stated for the `Money.round()` half-even fix or the
+`setup.cfg` metadata raise. The percentage-discount API shape (leaning: `Money.discounted(percent:
 Decimal) -> Money`, returning unrounded `Money` so the caller rounds explicitly) is still open
 design. [cite: source:transcript-run-a080ea35@r1]
 

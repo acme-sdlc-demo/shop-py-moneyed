@@ -87,6 +87,6 @@ The release process requires every change merged since the last release to be li
 The product note identifies several planned changes that have been in progress since the fork
 (clearer mismatch error, percentage-discount method) [cite: source:product-note@r1], but the
 `CHANGES.rst` unreleased section contains only upstream entries
-[cite: docs/agents/CODEBASE_MAP.md]. None of the SHOP-originated work since the fork appears to
+[cite: CHANGES.rst]. None of the SHOP-originated work since the fork appears to
 be recorded there. Before the next release this section must be updated to comply with the release
 process.
