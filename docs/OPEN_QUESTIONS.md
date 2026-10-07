@@ -52,8 +52,8 @@ release exists yet and no date is set.
 
 **8. Is there a code-level guard preventing services from calling `add_currency` at runtime?**
 The rule that services never call `add_currency` is a policy only; nothing in the code enforces
-it. A runtime call would corrupt the `CURRENCIES` registry for the life of the process. Is a
-lint rule, deprecation warning, or other in-code guard planned?
+it. A runtime call would mutate the module-level `CURRENCIES` dict for the life of the process.
+Is a lint rule, deprecation warning, or other in-code guard planned?
 [cite: source:transcript-run-a080ea35@r1] [cite: src/moneyed/classes.py]
 
 ## Documents vs code

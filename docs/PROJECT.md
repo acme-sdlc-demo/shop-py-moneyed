@@ -55,7 +55,7 @@ dependencies. No new dependency may be added without team approval, because this
 imported by every SHOP service. [cite: setup.cfg]
 
 **Currency codes:** ISO 4217 only in production code. `XYZ` is permitted in tests only, with an
-inline comment explaining why. [cite: source:transcript-run-a080ea35@r1]
+inline comment explaining why. [cite: profile:glossary]
 
 **Type safety:** mypy runs in strict mode on all source files. `from __future__ import annotations`
 is present in every source file. `tests/test_l10n.py` is exempt from `disallow_untyped_defs`.
@@ -70,8 +70,12 @@ review control. [cite: source:product-note@r1] [cite: source:transcript-run-a080
 **2. Tag-based releases, not PyPI.**
 SHOP services install from `v<version>` git tags. Release requires QA sign-off (gina or hal)
 followed by product-owner sign-off (erin or frank); nobody signs off a release they prepared.
-No release in the last week of a month (finance's month-end close) unless it fixes a wrong
-settlement amount. [cite: source:how-we-release@r1]
+Two blocking conditions: (a) no release in the last week of a month (finance's month-end close)
+unless it fixes a wrong settlement amount; (b) no release while a known defect that changes a
+settlement amount is unfixed. [cite: source:how-we-release@r1] Condition (b) applies today:
+`get_amount_in_sub_unit()` truncates instead of raising when the amount has more precision than
+the minor unit allows — a latent settlement-amount defect (see Decision 10).
+[cite: source:transcript-run-a080ea35@r1]
 
 **3. Any rounding or arithmetic result change triggers a minor version bump.**
 Downstream services are settlement-critical; even a silent change to what `round()` returns
@@ -93,8 +97,8 @@ keeping backward compatibility for callers that already catch `TypeError`.
 **6. `CURRENCIES` is a mutable module-level dict; services may not call `add_currency` at runtime.**
 `add_currency` is public API (star-imported from `__init__.py`) but SHOP's rule is that services
 never call it. New currencies (e.g. XCG, ZWG) enter through a reviewed change to `classes.py`.
-A runtime call would corrupt the registry for the lifetime of the process.
-[cite: source:transcript-run-a080ea35@r1] [cite: src/moneyed/classes.py]
+A runtime call would mutate the module-level `CURRENCIES` dict for the lifetime of the process.
+[cite: src/moneyed/classes.py] [cite: source:transcript-run-a080ea35@r1]
 
 **7. Display amounts are produced by Babel and never parsed back.**
 `format_money` is for receipts and human display only; it is never used as input to arithmetic.
@@ -138,7 +142,7 @@ code, documents and reviews. [cite: profile:glossary]
 that is meant as money is a defect. [cite: src/moneyed/classes.py]
 
 **Currency** — an ISO 4217 code (`EUR`, `USD`, `JPY`). SHOP never invents currency codes; a test
-may use `XYZ` only if it says why. [cite: src/moneyed/classes.py]
+may use `XYZ` only if it says why. [cite: profile:glossary]
 
 **Minor unit** — the smallest unit a currency is settled in (cents for EUR, none for JPY). Taken
 from `Currency.sub_unit`, never hard-coded as 2. [cite: src/moneyed/classes.py]
