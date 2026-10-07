@@ -58,7 +58,8 @@ imported by every SHOP service. [cite: setup.cfg]
 inline comment explaining why. [cite: source:transcript-run-a080ea35@r1]
 
 **Type safety:** mypy runs in strict mode on all source files. `from __future__ import annotations`
-is present in every source file. [cite: setup.cfg] [cite: src/moneyed/classes.py]
+is present in every source file. `tests/test_l10n.py` is exempt from `disallow_untyped_defs`.
+[cite: setup.cfg] [cite: src/moneyed/classes.py]
 
 ## Decisions so far (and why)
 
@@ -79,13 +80,14 @@ carry the same version string in the release commit. [cite: source:how-we-releas
 
 **4. Babel is a hard runtime dependency (in `install_requires`).**
 `moneyed.l10n` wraps `babel.numbers.format_currency` for locale-aware display amounts, and Babel
-is the source of currency names. Every caller gets it. [cite: source:transcript-run-a080ea35@r1]
-[cite: setup.cfg]
+is the source of currency names via `Currency.get_name()`. Every caller gets it automatically.
+[cite: source:transcript-run-a080ea35@r1] [cite: setup.cfg]
 
 **5. Currency-mismatch arithmetic raises `TypeError` today; `CurrencyMismatchError` is planned.**
 `Money.__add__` raises a bare `TypeError` without naming the currencies. The planned
 `CurrencyMismatchError(TypeError)` subclass will name both currencies in its message, while
 keeping backward compatibility for callers that already catch `TypeError`.
+`MoneyComparisonError(TypeError)` is the existing pattern to follow.
 [cite: src/moneyed/classes.py] [cite: source:transcript-run-a080ea35@r1]
 
 **6. `CURRENCIES` is a mutable module-level dict; services may not call `add_currency` at runtime.**
@@ -118,12 +120,20 @@ has more precision than the minor unit allows. [cite: source:transcript-run-a080
 **11. Allocation is not yet in the library.**
 Checkout does it by hand today. The preferred shape is `Money.allocate(ratios)` returning a list
 that sums exactly to the original, with leftover minor units going to the first parts one each in
-order; the final API is not yet agreed. [cite: source:product-note@r1]
-[cite: source:transcript-run-a080ea35@r1]
+order; the final API is not yet agreed and there is no target release.
+[cite: source:product-note@r1] [cite: source:transcript-run-a080ea35@r1]
 
-**12. Planned work order (first three items only; sequence beyond that is not decided).**
-`CurrencyMismatchError` (clearer error message) → percentage-discount method
-(`Money.discounted(percent)`) → allocation. [cite: source:transcript-run-a080ea35@r1]
+**12. Agreed roadmap order (as of the 2026 onboarding interview with alice).**
+
+1. `CurrencyMismatchError` — clearer cross-currency arithmetic error naming both codes.
+2. `Money.round()` half-even fix — pass `ROUND_HALF_EVEN` explicitly, not from ambient context.
+3. `Money.discounted(percent: Decimal)` — percentage discount returning unrounded `Money`;
+   caller rounds explicitly to a settlement amount.
+4. `Money.allocate(ratios)` — exact split by ratios, leftovers to first parts one minor unit each.
+5. Stale `setup.cfg` metadata raise (Python floor, classifiers, mypy version) — dedicated commit.
+
+Adding XCG and ZWG to `CURRENCIES` is tracked separately as a defect; it does not have a fixed
+position in the sequence above. [cite: source:transcript-run-a080ea35@r1]
 
 ## Glossary
 
@@ -174,10 +184,17 @@ applied before rounding, never after. [cite: profile:glossary]
 **Refund** — `Money` paid back against an earlier settlement, in the settlement's currency, never
 more than was settled. [cite: profile:glossary]
 
-**Basket** — the lines a customer is about to pay for. Has exactly one currency, chosen when its
-first line is added; a line in another currency is converted on adding, with the rate recorded on
-the line. [cite: profile:glossary]
+**Money field** — in Django (via shop-django-money), the pair of model fields (amount and
+currency) that store one `Money`. Both are required; a blank currency is a defect, not a default.
+[cite: profile:glossary]
 
 **Tax** — `Money` added to a price by a tax rule of the buyer's country, computed per line,
 rounded per line to the minor unit (half-even), then summed. Never computed on the total.
 [cite: profile:glossary]
+
+**Basket** — the lines a customer is about to pay for. Has exactly one currency, chosen when its
+first line is added; a line in another currency is converted on adding, with the rate recorded on
+the line. [cite: profile:glossary]
+
+**Ledger entry** — an append-only record of one settlement, refund or adjustment, with its
+`Money`, its time and who caused it. Ledger entries are never edited. [cite: profile:glossary]
