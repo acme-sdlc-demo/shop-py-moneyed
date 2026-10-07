@@ -11,8 +11,8 @@ See `docs/agents/CODEBASE_MAP.md` for the full codebase map before designing any
 - **Runtime deps** (both in `install_requires`): `babel>=2.8.0` (formatting + currency names),
   `typing-extensions>=3.7.4.3`. Do not add a dependency without team approval; this library is
   imported by every SHOP service. [cite: setup.cfg]
-- **Dev/test extras**: `pytest`, `pytest-mypy-plugins`, `mypy>=1.9.0`, `black`, `isort`, `flake8`.
-  All are already in the venv. Versions for `black`, `isort` and `flake8` are pinned in
+- **Dev/test extras**: `pytest`, `pytest-mypy-plugins`, `mypy>=1.9.0`, `black` 24.4.0,
+  `isort` 5.13.2, `flake8` 7.0.0. All are already in the venv. Versions are pinned in
   `.pre-commit-config.yaml`; use the gate's pinned versions. [cite: .pre-commit-config.yaml]
 - **No network access** at import time or in tests. Exchange rates are never this library's
   responsibility. [cite: source:product-note@r1]
@@ -32,7 +32,7 @@ tests/
 docs/                      # Sphinx; conf.py holds the second version string
 ```
 
-Full map: [cite: docs/agents/CODEBASE_MAP.md]
+Full map: `docs/agents/CODEBASE_MAP.md` [cite: docs/agents/CODEBASE_MAP.md]
 
 ## Coding conventions
 
@@ -48,8 +48,8 @@ Full map: [cite: docs/agents/CODEBASE_MAP.md]
   `CurrencyMismatchError(TypeError)` naming both currencies. `MoneyComparisonError(TypeError)` is the
   pattern to follow. Do not swallow or widen existing exception types. [cite: src/moneyed/classes.py]
   [cite: source:transcript-run-a080ea35@r1]
-- **line length 119**, `black` formatting, `isort --profile black`. [cite: setup.cfg]
-- **`cached_property`** from `moneyed.utils` (not `functools`) for lazily computed Currency
+- **Line length 119**, `black` formatting, `isort --profile black`. [cite: setup.cfg]
+- **`cached_property`** from `moneyed.utils` (not `functools`) for lazily computed `Currency`
   attributes. [cite: src/moneyed/utils.py]
 
 ## Testing
@@ -66,7 +66,7 @@ Full map: [cite: docs/agents/CODEBASE_MAP.md]
   - Type cases: `pytest tests/test_money.yaml`
 - **Gate command** (exact form, do not alter):
   ```
-  python -c "import os, sys, pytest; os.environ['PATH'] = ...; raise SystemExit(pytest.main(['-q', '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg', '--mypy-only-local-stub', '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
+  python -c "import os, sys, pytest; os.environ['PATH'] = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']; os.environ['MYPYPATH']=os.path.abspath('src'); raise SystemExit(pytest.main(['-q', '-o', 'pythonpath=src', '--mypy-ini-file=setup.cfg', '--mypy-only-local-stub', '--deselect', 'tests/test_moneyed_classes.py::test_all_babel_currencies']))"
   ```
   `test_all_babel_currencies` is intentionally deselected — XCG and ZWG are missing from
   `CURRENCIES`; this is a tracked defect, not to be fixed as a side effect. [cite: source:transcript-run-a080ea35@r1]
