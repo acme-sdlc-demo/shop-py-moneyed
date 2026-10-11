@@ -149,21 +149,45 @@ def test_allocate_ac4_result_amounts_are_integers_for_zero_decimal_currency() ->
 
 
 def test_allocate_ac3_remainder_order_second_example() -> None:
-    """Two remainder cents go to the first two parts, not the last."""
-    # 10.00 / 3: each gets 3.33, remainder = 2 cents
-    # parts become 3.35, 3.34, 3.33 - but AC spec says first then second
-    # Actually: floor(10.00/3)=3.33 x3 = 9.99, remainder=2 cents
-    # -> parts[0] += 0.01, parts[1] += 0.01 => [3.34, 3.34, 3.32]? No:
-    # Standard: give one cent each to parts in order until exhausted
-    # 3.33+0.01=3.34, 3.33+0.01=3.34, 3.33 => [3.34, 3.34, 3.32]
-    # But AC-1 shows [33.34, 33.33, 33.33] with only 1 cent remainder.
-    # Here with 2 cents: [3.34, 3.34, 3.32]? Let's verify sum = 10.00 ✓
+    """10.00 USD split three ways: floor gives 3.33 each (9.99 total),
+    one leftover cent goes to the first part only."""
     money = Money("10.00", "USD")
     result = money.allocate([1, 1, 1])
+    assert result == [
+        Money("3.34", "USD"),
+        Money("3.33", "USD"),
+        Money("3.33", "USD"),
+    ]
     assert sum(result) == money  # type: ignore[arg-type]
-    # The first part gets any extra
-    assert result[0] >= result[1]
-    assert result[1] >= result[2]
+
+
+def test_allocate_ac3_two_remainder_units_ac3() -> None:
+    """0.02 USD split three ways: floor gives 0.00 each (0.00 total),
+    two leftover cents go to the first two parts in order."""
+    money = Money("0.02", "USD")
+    result = money.allocate([1, 1, 1])
+    assert result == [
+        Money("0.01", "USD"),
+        Money("0.01", "USD"),
+        Money("0.00", "USD"),
+    ]
+    assert sum(result) == money  # type: ignore[arg-type]
+
+
+def test_allocate_ac3_four_remainder_units_ac3() -> None:
+    """1.00 USD split six ways: floor gives 0.16 each (0.96 total),
+    four leftover cents go to the first four parts in order."""
+    money = Money("1.00", "USD")
+    result = money.allocate([1, 1, 1, 1, 1, 1])
+    assert result == [
+        Money("0.17", "USD"),
+        Money("0.17", "USD"),
+        Money("0.17", "USD"),
+        Money("0.17", "USD"),
+        Money("0.16", "USD"),
+        Money("0.16", "USD"),
+    ]
+    assert sum(result) == money  # type: ignore[arg-type]
 
 
 def test_allocate_ac5_negative_parts_sum_correctly() -> None:
