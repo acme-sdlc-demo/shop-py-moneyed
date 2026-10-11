@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import warnings
 from decimal import Decimal
-from typing import TYPE_CHECKING, Protocol, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Protocol, TypeVar, overload
 
 from babel import Locale
 from babel.core import get_global
@@ -78,13 +78,10 @@ class Currency:
     def get_name(self, locale: str, count: int | None = None) -> str:
         from babel.numbers import get_currency_name
 
-        return cast(
-            "str",
-            get_currency_name(
-                self.code,
-                locale=locale,
-                count=count,
-            ),
+        return get_currency_name(
+            self.code,
+            locale=locale,
+            count=count,
         )
 
     @cached_property
