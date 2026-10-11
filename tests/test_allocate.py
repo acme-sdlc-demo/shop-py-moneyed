@@ -23,7 +23,7 @@ class TestAllocateAC1:
     def test_allocate_ac1_parts_sum_to_whole(self) -> None:
         money = Money("100.00", "EUR")
         result = money.allocate([1, 1, 1])
-        assert sum(result) == money  # type: ignore[arg-type]
+        assert sum(result) == money
 
 
 class TestAllocateAC2:
@@ -41,7 +41,7 @@ class TestAllocateAC2:
     def test_allocate_ac2_parts_sum_to_whole(self) -> None:
         money = Money("10.00", "USD")
         result = money.allocate([70, 20, 10])
-        assert sum(result) == money  # type: ignore[arg-type]
+        assert sum(result) == money
 
 
 class TestAllocateAC3:
@@ -60,7 +60,7 @@ class TestAllocateAC3:
     def test_allocate_ac3_parts_sum_to_whole(self) -> None:
         money = Money("0.05", "USD")
         result = money.allocate([3, 7])
-        assert sum(result) == money  # type: ignore[arg-type]
+        assert sum(result) == money
 
 
 class TestAllocateAC4:
@@ -78,7 +78,7 @@ class TestAllocateAC4:
     def test_allocate_ac4_parts_sum_to_whole(self) -> None:
         money = Money("100", "JPY")
         result = money.allocate([1, 1, 1])
-        assert sum(result) == money  # type: ignore[arg-type]
+        assert sum(result) == money
 
 
 class TestAllocateAC5:
@@ -96,7 +96,7 @@ class TestAllocateAC5:
     def test_allocate_ac5_parts_sum_to_whole(self) -> None:
         money = Money("-100.00", "EUR")
         result = money.allocate([1, 1, 1])
-        assert sum(result) == money  # type: ignore[arg-type]
+        assert sum(result) == money
 
 
 class TestAllocateAC6:
@@ -158,7 +158,7 @@ def test_allocate_ac3_remainder_order_second_example() -> None:
         Money("3.33", "USD"),
         Money("3.33", "USD"),
     ]
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac3_two_remainder_units_ac3() -> None:
@@ -171,7 +171,7 @@ def test_allocate_ac3_two_remainder_units_ac3() -> None:
         Money("0.01", "USD"),
         Money("0.00", "USD"),
     ]
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac3_four_remainder_units_ac3() -> None:
@@ -187,14 +187,14 @@ def test_allocate_ac3_four_remainder_units_ac3() -> None:
         Money("0.16", "USD"),
         Money("0.16", "USD"),
     ]
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac5_negative_parts_sum_correctly() -> None:
     """Negative amounts still conserve cents: no money is created or lost."""
     money = Money("-0.05", "USD")
     result = money.allocate([3, 7])
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac6_one_negative_among_positives_raises() -> None:
@@ -209,7 +209,7 @@ def test_allocate_ac1_decimal_ratios_not_required_integer() -> None:
     money = Money("1.00", "USD")
     result = money.allocate([1, 1])
     assert result == [Money("0.50", "USD"), Money("0.50", "USD")]
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac4_single_ratio_returns_full_amount() -> None:
@@ -228,7 +228,7 @@ def test_allocate_ac3_remainder_goes_to_first_parts_in_order() -> None:
     assert result[0] == Money("0.04", "USD")
     assert result[1] == Money("0.03", "USD")
     assert result[2] == Money("0.03", "USD")
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac5_negative_jpy_no_minor_unit() -> None:
@@ -237,7 +237,7 @@ def test_allocate_ac5_negative_jpy_no_minor_unit() -> None:
     result = money.allocate([1, 1])
     # floor(-5) = -5 each, total = -10, no remainder
     assert result == [Money("-5", "JPY"), Money("-5", "JPY")]
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac2_large_weighted_ratios_usd() -> None:
@@ -245,7 +245,7 @@ def test_allocate_ac2_large_weighted_ratios_usd() -> None:
     money = Money("1000.00", "USD")
     result = money.allocate([1, 9])
     assert result == [Money("100.00", "USD"), Money("900.00", "USD")]
-    assert sum(result) == money  # type: ignore[arg-type]
+    assert sum(result) == money
 
 
 def test_allocate_ac6_all_zeros_raises_with_zero_message() -> None:
