@@ -300,7 +300,7 @@ class TestMoney:
         assert abs(y) == abs_money
 
     def test_sum(self) -> None:
-        assert sum(
+        assert sum(  # type: ignore[arg-type]
             [Money(amount=1, currency=self.USD), Money(amount=2, currency=self.USD)]
         ) == Money(amount=3, currency=self.USD)
 

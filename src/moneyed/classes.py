@@ -322,7 +322,9 @@ class Money:
                 currency=self.currency,
             )
 
-    __radd__ = __add__
+    def __radd__(self: M, other: "Money") -> M:
+        return self.__add__(other)
+
     __rmul__ = __mul__
 
     # _______________________________________
