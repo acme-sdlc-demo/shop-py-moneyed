@@ -1,0 +1,74 @@
+# Written by the Agentic SDLC Platform from the Project's config; change it through the platform.
+# It runs exactly the platform's gate.
+name: sdlc-checks
+'on':
+  pull_request: {}
+  push:
+    branches:
+    - master
+permissions:
+  contents: read
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 160
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: 'install: python -m pip install --upgrade pip'
+      run: python -m pip install --upgrade pip
+    - name: 'install: python -m pip install -e ".[type-tests]" "mypy==1.9.0" "pytest<8"'
+      run: python -m pip install -e ".[type-tests]" "mypy==1.9.0" "pytest<8"
+    - name: 'install: python -m pip install black isort "flake8==7.0.0" flake8-type-checking
+        flake8-bugbear flake8-comprehensions flake8-print flake8-mutable flake8-simplify
+        flake8-pytest-style flake8-printf-formatting ruff'
+      run: python -m pip install black isort "flake8==7.0.0" flake8-type-checking
+        flake8-bugbear flake8-comprehensions flake8-print flake8-mutable flake8-simplify
+        flake8-pytest-style flake8-printf-formatting ruff
+    - name: 'install: python -m venv .venv/mypy-env'
+      run: python -m venv .venv/mypy-env
+    - name: 'install: python -c "import subprocess, sys, pathlib; p = pathlib.Path(''.venv/mypy-env'')
+        / (''Scripts'' if sys.platform == ''win32'' else ''bin'') / ''python''; subprocess.run([str(p),
+        ''-m'', ''pip'', ''install'', ''mypy==1.9.0'', ''pytest<8''], check=True)"'
+      run: python -c "import subprocess, sys, pathlib; p = pathlib.Path('.venv/mypy-env')
+        / ('Scripts' if sys.platform == 'win32' else 'bin') / 'python'; subprocess.run([str(p),
+        '-m', 'pip', 'install', 'mypy==1.9.0', 'pytest<8'], check=True)"
+    - name: python -m black --check --quiet src tests
+      run: python -m black --check --quiet src tests
+    - name: python -m isort --check-only src tests
+      run: python -m isort --check-only src tests
+    - name: python -m flake8 src tests
+      run: python -m flake8 src tests
+    - name: python -c "import subprocess, sys, pathlib; p = pathlib.Path('.venv/mypy-env')
+        / ('Scripts' if sys.platform == 'win32' else 'bin') / 'python'; raise SystemExit(subprocess.run([str(p),
+        '-m', 'mypy']).returncode)"
+      run: python -c "import subprocess, sys, pathlib; p = pathlib.Path('.venv/mypy-env')
+        / ('Scripts' if sys.platform == 'win32' else 'bin') / 'python'; raise SystemExit(subprocess.run([str(p),
+        '-m', 'mypy']).returncode)"
+    - name: python -m pytest --mypy-ini-file=setup.cfg
+      shell: bash
+      run: "set +e\nrm -rf .sdlc-reports\nexport PYTEST_ADDOPTS=--junitxml=.sdlc-reports/pytest.xml\n\
+        python -m pytest --mypy-ini-file=setup.cfg --junitxml=.sdlc-reports/pytest.xml\n\
+        code=$?\npython3 -c 'import glob, json, sys, xml.etree.ElementTree as ET\n\
+        code, pattern, prefix, known = int(sys.argv[1]), sys.argv[2], sys.argv[3],\
+        \ set(json.loads(sys.argv[4]))\nfailed = set()\nfiles = [f for f in glob.glob(pattern,\
+        \ recursive=True) if f.endswith((\".xml\", \".trx\"))]\nif not files:\n  \
+        \  sys.exit(\"the command wrote no test report\")\nfor path in files:\n  \
+        \  for e in ET.parse(path).getroot().iter():\n        tag = e.tag.rsplit(\"\
+        }\", 1)[-1]\n        kids = {c.tag.rsplit(\"}\", 1)[-1] for c in e}\n    \
+        \    if tag == \"testcase\" and kids & {\"failure\", \"error\"}:\n       \
+        \     failed.add(prefix + (f\"{e.get('\"'\"'classname'\"'\"')}::{e.get('\"\
+        '\"'name'\"'\"')}\" if e.get(\"classname\") else e.get(\"name\")))\n     \
+        \   elif tag == \"UnitTestResult\" and e.get(\"outcome\") in (\"Failed\",\
+        \ \"Error\", \"Timeout\", \"Aborted\"):\n            failed.add(prefix + e.get(\"\
+        testName\"))\nnew = sorted(failed - known)\nif code and (new or not failed):\n\
+        \    sys.exit(f\"exited {code}; failing, and not known failures: {'\"'\"',\
+        \ '\"'\"'.join(new) or '\"'\"'(none named)'\"'\"'}\")\nprint(f\"known failures\
+        \ still failing: {'\"'\"', '\"'\"'.join(sorted(failed & known)) or '\"'\"\
+        'none'\"'\"'}\")\n' \"$code\" '.sdlc-reports/**/*' '' '[\"tests.test_money.yaml::can_instantiate_money\"\
+        , \"tests.test_money.yaml::instantiating_money_without_currency_gives_error\"\
+        , \"tests.test_moneyed_classes.TestMoney::test_str\", \"tests.test_moneyed_classes::test_all_babel_currencies\"\
+        ]'\n"
