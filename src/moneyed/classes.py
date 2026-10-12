@@ -363,6 +363,42 @@ class Money:
     def get_amount_in_sub_unit(self) -> int:
         return int(self.currency.sub_unit * self.amount)
 
+    def allocate(self: M, ratios: list[int]) -> list[M]:
+        """Split this Money into parts by ratios without losing a minor unit.
+
+        Each part is first floored to the currency's minor unit; any leftover
+        minor units are given one at a time to the first parts in order, so
+        the parts always sum to exactly the original amount.
+
+        Raises ValueError if *ratios* is empty, contains a negative value, or
+        sums to zero.
+        """
+        if not ratios:
+            raise ValueError("ratios must not be empty")
+        if any(r < 0 for r in ratios):
+            raise ValueError("ratios must not contain a negative value")
+        total_ratio = sum(ratios)
+        if total_ratio == 0:
+            raise ValueError("ratios must not sum to zero")
+
+        sub_unit = self.currency.sub_unit
+        sign = Decimal(-1) if self.amount < Decimal(0) else Decimal(1)
+        total_minor = int(abs(self.amount) * sub_unit)
+
+        shares_minor = [total_minor * r // total_ratio for r in ratios]
+        remainder = total_minor - sum(shares_minor)
+        for i in range(remainder):
+            shares_minor[i] += 1
+
+        minor_unit_value = Decimal(1) / Decimal(sub_unit)
+        return [
+            self.__class__(
+                amount=sign * Decimal(s) * minor_unit_value,
+                currency=self.currency,
+            )
+            for s in shares_minor
+        ]
+
 
 # ____________________________________________________________________
 # Definitions of ISO 4217 Currencies
