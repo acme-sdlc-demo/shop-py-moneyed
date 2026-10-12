@@ -322,9 +322,7 @@ class Money:
                 currency=self.currency,
             )
 
-    def __radd__(self: M, other: "Money") -> M:
-        return self.__add__(other)
-
+    __radd__ = __add__
     __rmul__ = __mul__
 
     # _______________________________________
@@ -364,46 +362,6 @@ class Money:
 
     def get_amount_in_sub_unit(self) -> int:
         return int(self.currency.sub_unit * self.amount)
-
-    def allocate(self: M, ratios: list[int]) -> list[M]:
-        """Split this Money into parts according to *ratios*.
-
-        Each part is first floored to the currency's minor unit, then any
-        remaining minor units are distributed one at a time to the earliest
-        parts in order, so the parts always sum to exactly the original amount.
-
-        Raises ValueError for empty, negative, or zero-sum ratio lists.
-        """
-        if not ratios:
-            raise ValueError("ratios must not be empty")
-        if any(r < 0 for r in ratios):
-            raise ValueError("ratios must not contain negative values")
-        total_ratio = sum(ratios)
-        if total_ratio == 0:
-            raise ValueError("ratios must not sum to zero")
-
-        sub_unit = self.currency.sub_unit
-        minor_unit_size = Decimal(1) / Decimal(sub_unit)
-
-        # Work in integer minor units to avoid rounding drift.
-        sign = Decimal("1") if self.amount >= 0 else Decimal("-1")
-        abs_minor = int(abs(self.amount) * sub_unit)
-
-        # Floor-allocate each part.
-        parts: list[int] = [abs_minor * r // total_ratio for r in ratios]
-        remainder = abs_minor - sum(parts)
-
-        # Distribute leftover minor units to the first parts in order.
-        for i in range(remainder):
-            parts[i] += 1
-
-        return [
-            self.__class__(
-                amount=sign * Decimal(p) * minor_unit_size,
-                currency=self.currency,
-            )
-            for p in parts
-        ]
 
 
 # ____________________________________________________________________
