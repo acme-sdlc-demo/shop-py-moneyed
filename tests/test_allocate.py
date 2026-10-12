@@ -1,4 +1,5 @@
 """Tests for Money.allocate – split an amount by ratios without losing a cent."""
+
 from __future__ import annotations
 
 from decimal import Decimal
@@ -220,3 +221,11 @@ def test_allocate_ac1_even_two_way_split() -> None:
     result = money.allocate([1, 1])
     assert result == [Money("0.50", "USD"), Money("0.50", "USD")]
     assert _sum(result) == money
+
+
+def test_allocate_ac1_parts_sum_exactly_uses_decimal_equality() -> None:
+    """AC-1 extra: verify exactness via Decimal arithmetic, not just Money equality."""
+    money = Money("100.00", "EUR")
+    result = money.allocate([1, 1, 1])
+    total_amount = sum(part.amount for part in result)
+    assert total_amount == Decimal("100.00")
