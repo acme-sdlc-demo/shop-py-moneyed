@@ -39,7 +39,7 @@ discounts — those live in consuming services. [cite: source:product-note@r1]
 | **Settlement amount** | `Money.round(ndigits)` — rounds to minor unit; uses active decimal context (default `ROUND_HALF_EVEN`) | `src/moneyed/classes.py` |
 | **Display amount** | `format_money(money, locale=…)` — Babel-formatted string; never parse back | `src/moneyed/l10n.py` |
 | **Currency registry** | `CURRENCIES: dict[str, Currency]`, `CURRENCIES_BY_ISO: dict[str, Currency]` | `src/moneyed/classes.py` |
-| **Allocation** | `Money.allocate(ratios: list[int]) -> list[Money]` — exact split, leftovers to first parts | `src/moneyed/classes.py` |
+| **Allocation** | `Money.allocate(ratios: list[int]) -> list[Money]` — exact split, leftovers to first parts; raises `ValueError` if the amount is finer than the currency's minor unit (callers must round first) | `src/moneyed/classes.py` |
 | **Currency mismatch** | `TypeError` raised on cross-currency arithmetic or comparison (planned: `CurrencyMismatchError(TypeError)`) | `src/moneyed/classes.py` |
 | **Subunit amount** | `Money.get_amount_in_sub_unit() -> int` — truncates; callers must `round()` first (known gap) | `src/moneyed/classes.py` |
 
