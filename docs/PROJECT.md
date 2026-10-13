@@ -116,6 +116,12 @@ basket/checkout. Exchange rates are fetched through `shop-django-money`.
 
 **Known failing tests** — the gate and CI carry accepted, known failures; none are deselected:
 
+- `tests/test_money.yaml::can_instantiate_money`
+  [cite: source:transcript-run-a080ea35@r1]
+- `tests/test_money.yaml::instantiating_money_without_currency_gives_error`
+  [cite: source:transcript-run-a080ea35@r1]
+- `tests/test_moneyed_classes.py::TestMoney::test_str`
+  [cite: source:transcript-run-a080ea35@r1]
 - `tests/test_moneyed_classes.py::test_all_babel_currencies` — Babel added XCG and ZWG, which
   `CURRENCIES` does not yet contain; adding them is tracked as a defect but does not affect
   settlement amounts so it does not block releases.
