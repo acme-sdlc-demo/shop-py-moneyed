@@ -45,9 +45,9 @@ method name, parameter name, and exact signature are still open design. No targe
 
 **7. Roadmap sequencing and target releases**
 The agreed order — `CurrencyMismatchError` → `Money.round()` half-even fix →
-`Money.discounted()` (percentage discount) → allocation already done → `setup.cfg` metadata
-update — has no published target releases attached to any step. The team needs to assign versions
-(or at least sequence milestones) so downstream services can plan.
+`Money.discounted()` (percentage discount) → allocation → `setup.cfg` metadata update — has no
+published target releases attached to any step. The team needs to assign versions (or at least
+sequence milestones) so downstream services can plan.
 [cite: source:transcript-run-a080ea35@r1] [cite: source:how-we-release@r1]
 
 ---

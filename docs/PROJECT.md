@@ -23,8 +23,8 @@ review process instead of waiting on the upstream maintainers. [cite: source:tra
   one-way: this library does not import from `shop-django-money`.
   [cite: source:transcript-run-a080ea35@r1]
 
-The library has no network connections at import time or in tests. Exchange rates are fetched only
-through `shop-django-money` from external rate providers (Open Exchange Rates, the ECB feed).
+The library has no network connections at import time or in tests. Exchange rates come from rate
+providers through `shop-django-money`, not from here.
 [cite: source:product-note@r1]
 
 ## Domain and constraints
@@ -34,7 +34,7 @@ through `shop-django-money` from external rate providers (Open Exchange Rates, t
 **Rounding:** Settlement amounts must always be rounded to the currency's minor unit using half-even
 (banker's) rounding. Every other amount stays unrounded until it becomes a settlement amount. The
 minor unit is always taken from the currency's own definition — never hard-coded as 2 (JPY has no
-sub-cent unit; KWD has 3). [cite: profile:languages] [cite: src/moneyed/classes.py]
+sub-cent unit; KWD has 3). [cite: profile:purpose] [cite: src/moneyed/classes.py]
 
 **Currency mixing:** Adding or subtracting `Money` in different currencies must raise, never convert
 silently. [cite: source:product-note@r1]
@@ -75,7 +75,7 @@ timeline for money-critical changes. Forked in 2026. [cite: source:transcript-ru
 
 **`Money` requires a currency at construction** — `Money(amount)` without a currency raises
 `TypeError`; there is no default currency. A bare `Decimal` treated as money is a defect per the
-domain glossary. [cite: src/moneyed/classes.py] [cite: profile:languages]
+domain glossary. [cite: src/moneyed/classes.py] [cite: profile:purpose]
 
 **Arithmetic refuses currency mixing** — `__add__` raises `TypeError` when currencies differ. A
 dedicated `CurrencyMismatchError` subclassing `TypeError` (so existing `except TypeError` callers
@@ -95,8 +95,8 @@ still open design. Not yet implemented. [cite: source:transcript-run-a080ea35@r1
 
 **Allocation** — `Money.allocate(ratios: list[int]) -> list[Money]` is implemented in the library.
 Parts are floored to the minor unit; leftover minor units go to the first parts one each in order,
-so parts always sum exactly to the original. Earlier interviews and the product note described this
-as absent; the code now contains it.
+so parts always sum exactly to the original. The product note described this as absent; the code
+now contains it.
 [cite: src/moneyed/classes.py] [cite: source:product-note@r1]
 
 **`get_amount_in_sub_unit()` truncates** — `int(self.currency.sub_unit * self.amount)` truncates
@@ -114,12 +114,8 @@ first. SHOP considers it a known gap; no fix is scheduled yet.
 basket/checkout. Exchange rates are fetched through `shop-django-money`.
 [cite: source:transcript-run-66c5f847@r1] [cite: source:product-note@r1]
 
-**Four known failing tests** — the gate and CI carry four accepted, known failures; none are
-deselected:
+**Known failing tests** — the gate and CI carry accepted, known failures; none are deselected:
 
-- `tests/test_money.yaml::can_instantiate_money` [cite: tests/test_money.yaml]
-- `tests/test_money.yaml::instantiating_money_without_currency_gives_error` [cite: tests/test_money.yaml]
-- `tests/test_moneyed_classes.py::TestMoney::test_str` [cite: tests/test_moneyed_classes.py]
 - `tests/test_moneyed_classes.py::test_all_babel_currencies` — Babel added XCG and ZWG, which
   `CURRENCIES` does not yet contain; adding them is tracked as a defect but does not affect
   settlement amounts so it does not block releases.
@@ -127,7 +123,7 @@ deselected:
 
 ## Glossary
 
-Terms as SHOP uses them [cite: profile:languages]:
+Terms as SHOP uses them [cite: profile:purpose]:
 
 | Term | Meaning |
 |---|---|
@@ -137,7 +133,7 @@ Terms as SHOP uses them [cite: profile:languages]:
 | **Settlement amount** | The amount actually charged or paid out. Always rounded to the currency's minor unit using half-even rounding. Every other amount stays unrounded until it becomes a settlement amount. |
 | **Display amount** | An amount formatted for a person in their locale. Never parsed back into `Money` and never used in a calculation. |
 | **Exchange rate** | How many units of the target currency one unit of the source currency buys, at a stated time, from a stated provider. A rate without its time and provider is not usable. |
-| **Rate provider** | An outside service SHOP gets exchange rates from (e.g. Open Exchange Rates, the ECB feed). This library does not fetch rates. |
+| **Rate provider** | An outside service SHOP gets exchange rates from. Exchange rates reach SHOP services through `shop-django-money`; this library does not fetch rates. [cite: source:product-note@r1] |
 | **Conversion** | Turning `Money` in one currency into `Money` in another with an exchange rate. Records the rate used. Converting twice in a row is a defect. |
 | **Allocation** | Splitting one `Money` into parts by ratios so the parts add up exactly to the whole. Leftover minor units go to the first parts, one each, in order. Implemented as `Money.allocate(ratios)`. |
 | **Price** | What a product costs, as `Money`, before tax and discounts. Stored in the currency it was set in; never converted on save. |
