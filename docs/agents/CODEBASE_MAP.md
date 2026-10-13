@@ -18,7 +18,8 @@ discounts — those live in consuming services. [cite: source:product-note@r1]
 | `src/moneyed/classes.py` | `Money`, `Currency`, `CURRENCIES` dict, all ISO-4217 constants, arithmetic operators, `allocate()`, exceptions | `babel`, `typing-extensions`, `src/moneyed/l10n.py`, `src/moneyed/utils.py` |
 | `src/moneyed/l10n.py` | `format_money()` — Babel-backed display formatting; display amounts only, never parsed back | `babel` |
 | `src/moneyed/utils.py` | `cached_property` descriptor (Python 3.8-compatible backport) | stdlib only |
-| `tests/test_moneyed_classes.py` | Core `Money` and `Currency` unit tests; includes the known-failing `test_all_babel_currencies` | `pytest`, `babel` |
+| `tests/test_moneyed_classes.py` | Core `Money` and `Currency` unit tests; includes the known-failing `test_all_babel_currencies` and `TestMoney::test_str` | `pytest`, `babel` |
+| `tests/test_money.yaml` | pytest-mypy-plugins type-checking tests; includes two known-failing cases | `pytest-mypy-plugins` |
 | `tests/test_l10n.py` | `format_money` tests | `pytest` |
 | `tests/test_allocate.py` | `Money.allocate` tests (AC-1 … AC-6 plus edge cases) | `pytest` |
 | `setup.cfg` | Package metadata, `install_requires`, flake8/isort/mypy/pytest config | — |
@@ -80,8 +81,11 @@ $python -m pytest --mypy-ini-file=setup.cfg
 
 - pytest configuration is in `setup.cfg` (`[tool:pytest]`): `--doctest-modules`, `--doctest-glob='*.rst'`,
   `-Werror`, testpaths = `tests/`. [cite: setup.cfg]
-- `test_all_babel_currencies` is a **known, accepted failure** (Babel added XCG and ZWG which
-  `CURRENCIES` lacks). It stays in the gate. Never deselect it. [cite: source:transcript-run-66c5f847@r1]
+- Four tests are **known, accepted failures** that stay in the gate. Never deselect any of them:
+  - `tests/test_money.yaml::can_instantiate_money` [cite: tests/test_money.yaml]
+  - `tests/test_money.yaml::instantiating_money_without_currency_gives_error` [cite: tests/test_money.yaml]
+  - `tests/test_moneyed_classes.py::TestMoney::test_str` [cite: tests/test_moneyed_classes.py]
+  - `tests/test_moneyed_classes.py::test_all_babel_currencies` (Babel added XCG/ZWG which `CURRENCIES` lacks) [cite: source:transcript-run-66c5f847@r1]
 - mypy is strict (`disallow_untyped_defs`, `warn_return_any`, etc.); `tests/test_l10n.py` has
   `disallow_untyped_defs = False`. [cite: setup.cfg]
 - Releases: tag `v<version>` on the release commit after QA + product-owner sign-off; no PyPI.
@@ -94,7 +98,7 @@ $python -m pytest --mypy-ini-file=setup.cfg
 | `Money.round()` | Does not explicitly pass `ROUND_HALF_EVEN`; relies on the active decimal context | Known gap; callers rely on Python's default. A fix is planned. [cite: src/moneyed/classes.py] |
 | `get_amount_in_sub_unit()` | Truncates toward zero instead of rounding | Callers that pass an unrounded `Money` get a wrong payment-provider amount. Known gap. [cite: src/moneyed/classes.py] |
 | `CURRENCIES` dict | Mutable at runtime via `add_currency()` | SHOP services must never call `add_currency()`; new currencies enter only through a reviewed change. [cite: source:transcript-run-a080ea35@r1] |
-| `test_all_babel_currencies` | Fails on current default branch (Babel XCG/ZWG) | Accepted known failure; do not remove or deselect. [cite: source:transcript-run-66c5f847@r1] |
+| Known-failing tests (4) | `test_money.yaml::can_instantiate_money`, `test_money.yaml::instantiating_money_without_currency_gives_error`, `TestMoney::test_str`, `test_all_babel_currencies` | Accepted known failures; do not remove or deselect any of them. [cite: tests/test_money.yaml], [cite: tests/test_moneyed_classes.py] |
 | Arithmetic changes | Any change to rounding or arithmetic result is a minor-version bump | Must be flagged at the top of `CHANGES.rst`. [cite: source:how-we-release@r1] |
 | Float inputs | Accepted via `DeprecationWarning`, not yet a `TypeError` | Do not silently widen float support in new code. [cite: src/moneyed/classes.py] |
 
@@ -115,6 +119,5 @@ $python -m pytest --mypy-ini-file=setup.cfg
 
 ### Uses
 
-- ? from shop-django-money (unknown project id): `shop-django-money` depends on this library —
-  it imports `moneyed.Money` and the currency registry to back its Django model and form fields.
-  This library does **not** import from `shop-django-money`. [cite: source:transcript-run-a080ea35@r1]
+- None found. This library imports only from its own modules, `babel`, and the standard library;
+  it does not import from any other SHOP Project. [cite: src/moneyed/classes.py], [cite: src/moneyed/l10n.py]

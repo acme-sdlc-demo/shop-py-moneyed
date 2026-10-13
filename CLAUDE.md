@@ -4,8 +4,9 @@ Rules marked *enforced* are checked by the platform and fail the step if broken.
 
 ## Stack and dependencies
 
-Python 3.12+ (prod and CI run 3.13; `setup.cfg` classifiers list 3.8–3.11 and are stale upstream
-metadata — raise them deliberately in a later dedicated change, not as a side-effect). [cite: setup.cfg]
+`setup.cfg` declares `python_requires = >=3.8`; SHOP's actual floor is 3.12 and prod/CI run 3.13 —
+the `setup.cfg` classifiers and mypy `python_version` are stale upstream metadata; raise them
+deliberately in a later dedicated change, not as a side-effect. [cite: source:transcript-run-a080ea35@r1]
 
 Runtime dependencies: `babel>=2.8.0`, `typing-extensions>=3.7.4.3`. [cite: setup.cfg]
 Dev/test extras declared in `setup.cfg`: `pytest`, `tox`, `mypy>=1.9.0`, `pytest-mypy-plugins`,
@@ -31,6 +32,7 @@ tests/
   test_moneyed_classes.py   # Core Money and Currency unit tests
   test_l10n.py              # format_money tests
   test_allocate.py          # Money.allocate tests
+  test_money.yaml           # pytest-mypy-plugins type-checking tests
 docs/
   conf.py           # Sphinx config; release version lives here AND in setup.cfg
   agents/
@@ -70,9 +72,12 @@ $python -m pytest --mypy-ini-file=setup.cfg
 
 - pytest discovers `test_*.py` in `tests/`; doctests run via `--doctest-modules` and
   `--doctest-glob='*.rst'`. [cite: setup.cfg]
-- `test_all_babel_currencies` is a **known, accepted failure** (Babel added XCG and ZWG which
-  `CURRENCIES` lacks). It stays in the gate — the gate review accepts the known failure. Never
-  deselect it. [cite: source:transcript-run-66c5f847@r1]
+- Four tests are **known, accepted failures** that stay in the gate — the gate review accepts them.
+  Never deselect any of them (*enforced*: protect_tests):
+  - `tests/test_money.yaml::can_instantiate_money` [cite: tests/test_money.yaml]
+  - `tests/test_money.yaml::instantiating_money_without_currency_gives_error` [cite: tests/test_money.yaml]
+  - `tests/test_moneyed_classes.py::TestMoney::test_str` [cite: tests/test_moneyed_classes.py]
+  - `tests/test_moneyed_classes.py::test_all_babel_currencies` (Babel added XCG/ZWG which `CURRENCIES` lacks) [cite: source:transcript-run-66c5f847@r1]
 - Never delete, skip, focus or weaken an existing test (*enforced*: protect_tests).
 - Add tests beside the existing tests for every behaviour you change. [cite: tests/test_moneyed_classes.py]
 
