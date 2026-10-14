@@ -229,3 +229,137 @@ def test_allocate_ac1_parts_sum_exactly_uses_decimal_equality() -> None:
     result = money.allocate([1, 1, 1])
     total_amount = sum(part.amount for part in result)
     assert total_amount == Decimal("100.00")
+
+
+# ---------------------------------------------------------------------------
+# Tests for: refuse to allocate an amount finer than its currency's minor unit
+# ---------------------------------------------------------------------------
+
+
+class TestAllocateSubUnitRefusal:
+    """allocate() must raise ValueError when the amount is finer than the minor unit."""
+
+    def test_allocate_sub_unit_ac1_usd_sub_cent_raises(self) -> None:
+        """AC-1: 10.005 USD has three decimal places; minor unit is 0.01 USD."""
+        money = Money("10.005", "USD")
+        with pytest.raises(ValueError, match=r"10\.005") as exc_info:
+            money.allocate([1, 1])
+        message = str(exc_info.value)
+        # Message must name the amount and the minor unit (0.01 USD).
+        assert "10.005" in message
+        assert "0.01" in message
+        assert "USD" in message
+
+    def test_allocate_sub_unit_ac1_no_parts_returned(self) -> None:
+        """AC-1 extra: ValueError is raised before any parts are produced."""
+        money = Money("10.005", "USD")
+        with pytest.raises(ValueError, match=r"10\.005"):
+            money.allocate([1, 1])
+
+    def test_allocate_sub_unit_ac2_jpy_fractional_raises(self) -> None:
+        """AC-2: 100.5 JPY is finer than JPY's minor unit of 1."""
+        money = Money("100.5", "JPY")
+        with pytest.raises(ValueError, match=r"100\.5") as exc_info:
+            money.allocate([1, 1, 1])
+        message = str(exc_info.value)
+        assert "100.5" in message
+        assert "JPY" in message
+
+    def test_allocate_sub_unit_ac2_message_names_minor_unit(self) -> None:
+        """AC-2 extra: message also names the minor unit (1 JPY)."""
+        money = Money("100.5", "JPY")
+        with pytest.raises(ValueError, match=r"JPY") as exc_info:
+            money.allocate([1, 1, 1])
+        message = str(exc_info.value)
+        # Minor unit for JPY is 1; the message must mention it.
+        assert "1" in message
+
+    def test_allocate_sub_unit_ac3_trailing_zeros_ok(self) -> None:
+        """AC-3: 10.000 USD is not finer than 0.01 USD; allocation succeeds."""
+        money = Money("10.000", "USD")
+        result = money.allocate([1, 1])
+        assert result == [Money("5.00", "USD"), Money("5.00", "USD")]
+
+    def test_allocate_sub_unit_ac3_sum_still_exact(self) -> None:
+        """AC-3 extra: parts from a trailing-zero amount still sum to the original."""
+        money = Money("10.000", "USD")
+        assert _sum(money.allocate([1, 1])) == Money("10.00", "USD")
+
+    def test_allocate_sub_unit_ac4_negative_eur_sub_cent_raises(self) -> None:
+        """AC-4: -0.015 EUR has three decimal places; minor unit is 0.01 EUR."""
+        money = Money("-0.015", "EUR")
+        with pytest.raises(ValueError, match=r"0\.015") as exc_info:
+            money.allocate([1, 2])
+        message = str(exc_info.value)
+        assert "0.015" in message
+        assert "0.01" in message
+        assert "EUR" in message
+
+    def test_allocate_sub_unit_ac4_no_parts_returned_negative(self) -> None:
+        """AC-4 extra: ValueError is raised before any parts are produced."""
+        money = Money("-0.015", "EUR")
+        with pytest.raises(ValueError, match=r"0\.015"):
+            money.allocate([1, 2])
+
+    def test_allocate_sub_unit_ac5_whole_minor_units_usd(self) -> None:
+        """AC-5: amounts already in whole minor units must work exactly as before."""
+        money = Money("0.99", "USD")
+        result = money.allocate([1, 1])
+        assert _sum(result) == money
+
+    def test_allocate_sub_unit_ac5_whole_minor_units_eur_three_way(self) -> None:
+        """AC-5: 100.00 EUR three-way split still gives the established result."""
+        money = Money("100.00", "EUR")
+        result = money.allocate([1, 1, 1])
+        assert result == [
+            Money("33.34", "EUR"),
+            Money("33.33", "EUR"),
+            Money("33.33", "EUR"),
+        ]
+
+    def test_allocate_sub_unit_ac5_whole_minor_units_jpy(self) -> None:
+        """AC-5: 100 JPY (already a whole unit) must allocate successfully."""
+        money = Money("100", "JPY")
+        result = money.allocate([1, 1, 1])
+        assert result == [
+            Money("34", "JPY"),
+            Money("33", "JPY"),
+            Money("33", "JPY"),
+        ]
+        assert _sum(result) == money
+
+    def test_allocate_sub_unit_ac5_existing_tests_unaffected_usd_weighted(
+        self,
+    ) -> None:
+        """AC-5: weighted 10.00 USD split unchanged."""
+        money = Money("10.00", "USD")
+        result = money.allocate([70, 20, 10])
+        assert result == [
+            Money("7.00", "USD"),
+            Money("2.00", "USD"),
+            Money("1.00", "USD"),
+        ]
+
+    def test_allocate_sub_unit_boundary_exactly_one_minor_unit_usd(self) -> None:
+        """Boundary: 0.01 USD is exactly one minor unit — must succeed."""
+        money = Money("0.01", "USD")
+        result = money.allocate([1])
+        assert result == [Money("0.01", "USD")]
+
+    def test_allocate_sub_unit_boundary_one_too_fine_usd(self) -> None:
+        """Boundary: 0.001 USD is one decimal place finer than allowed — must raise."""
+        money = Money("0.001", "USD")
+        with pytest.raises(ValueError, match=r"0\.001"):
+            money.allocate([1])
+
+    def test_allocate_sub_unit_boundary_kwd_three_decimal_places_ok(self) -> None:
+        """KWD has sub_unit=1000 (three decimal places); 1.000 KWD is exact — OK."""
+        money = Money("1.000", "KWD")
+        result = money.allocate([1])
+        assert result == [Money("1.000", "KWD")]
+
+    def test_allocate_sub_unit_boundary_kwd_four_decimal_places_raises(self) -> None:
+        """KWD has sub_unit=1000; 1.0001 KWD is finer than the minor unit — raises."""
+        money = Money("1.0001", "KWD")
+        with pytest.raises(ValueError, match=r"1\.0001"):
+            money.allocate([1])

@@ -96,7 +96,9 @@ still open design. Not yet implemented. [cite: source:transcript-run-a080ea35@r1
 **Allocation** — `Money.allocate(ratios: list[int]) -> list[Money]` is implemented in the library.
 Parts are floored to the minor unit; leftover minor units go to the first parts one each in order,
 so parts always sum exactly to the original. The product note described this as absent; the code
-now contains it.
+now contains it. `allocate` raises `ValueError` if the amount is finer than the currency's minor
+unit (e.g. `Money("10.005", "USD")` for USD whose minor unit is 0.01); callers must round to the
+minor unit before allocating.
 [cite: src/moneyed/classes.py] [cite: source:product-note@r1]
 
 **`get_amount_in_sub_unit()` truncates** — `int(self.currency.sub_unit * self.amount)` truncates
@@ -141,7 +143,7 @@ Terms as SHOP uses them [cite: profile:purpose]:
 | **Exchange rate** | How many units of the target currency one unit of the source currency buys, at a stated time, from a stated provider. A rate without its time and provider is not usable. |
 | **Rate provider** | An outside service SHOP gets exchange rates from. Exchange rates reach SHOP services through `shop-django-money`; this library does not fetch rates. [cite: source:product-note@r1] |
 | **Conversion** | Turning `Money` in one currency into `Money` in another with an exchange rate. Records the rate used. Converting twice in a row is a defect. |
-| **Allocation** | Splitting one `Money` into parts by ratios so the parts add up exactly to the whole. Leftover minor units go to the first parts, one each, in order. Implemented as `Money.allocate(ratios)`. |
+| **Allocation** | Splitting one `Money` into parts by ratios so the parts add up exactly to the whole. Leftover minor units go to the first parts, one each, in order. Implemented as `Money.allocate(ratios)`. The amount must already be in whole minor units; a finer amount raises `ValueError`. |
 | **Price** | What a product costs, as `Money`, before tax and discounts. Stored in the currency it was set in; never converted on save. |
 | **Total** | Sum of a basket's prices, discounts, and taxes. A total mixing currencies is refused, not silently converted. |
 | **Discount** | A reduction of a price, as `Money` or as a percentage. A percentage discount is applied before rounding, never after. |

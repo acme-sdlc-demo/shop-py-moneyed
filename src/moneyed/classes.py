@@ -372,6 +372,10 @@ class Money:
 
         Raises ValueError if *ratios* is empty, contains a negative value, or
         sums to zero.
+
+        Raises ValueError if the amount is finer than the currency's minor
+        unit (e.g. Money("10.005", "USD") for a currency whose minor unit is
+        0.01 USD).  Round the amount to the minor unit before allocating.
         """
         if not ratios:
             raise ValueError("ratios must not be empty")
@@ -382,6 +386,13 @@ class Money:
             raise ValueError("ratios must not sum to zero")
 
         sub_unit = self.currency.sub_unit
+        minor_unit_value = Decimal(1) / Decimal(sub_unit)
+        amount_in_minor = abs(self.amount) * Decimal(sub_unit)
+        if amount_in_minor != amount_in_minor.to_integral_value():
+            raise ValueError(
+                f"Amount {self.amount} is finer than the minor unit "
+                f"(minor unit {minor_unit_value} {self.currency.code})"
+            )
         sign = Decimal(-1) if self.amount < Decimal(0) else Decimal(1)
         total_minor = int(abs(self.amount) * sub_unit)
 
